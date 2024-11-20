@@ -124,6 +124,7 @@ class ConvPeriodicPadding(tf.keras.layers.Layer):
     def __init__(self, input_shape, pool_size=2, strides=2, **kwargs):
         super(ConvPeriodicPadding, self).__init__()
 
+        self.kernel_size = kwargs['kernel_size']
         self.layer_conv = []
         self.layer_conv += [
             tf.keras.layers.Conv2D(
@@ -136,6 +137,9 @@ class ConvPeriodicPadding(tf.keras.layers.Layer):
             tf.keras.layers.MaxPool2D(pool_size=pool_size,
                                       strides=strides,
                                       padding='valid')
+            # tf.keras.layers.AveragePooling2D(pool_size=pool_size,
+            #                                  strides=strides,
+            #                                  padding='valid')
             ]
         
         for i in range(kwargs['n_conv_steps']-1):
@@ -150,6 +154,9 @@ class ConvPeriodicPadding(tf.keras.layers.Layer):
                 tf.keras.layers.MaxPool2D(pool_size=pool_size,
                                           strides=strides,
                                           padding='valid')
+                # tf.keras.layers.AveragePooling2D(pool_size=pool_size,
+                #                           strides=strides,
+                #                           padding='valid')
                 ]
                 
     def call(self, x):
@@ -158,8 +165,9 @@ class ConvPeriodicPadding(tf.keras.layers.Layer):
         for i, l in enumerate(self.layer_conv):  
             if i%3==0: # conv layer
                 print("   ###   Conv layer")
-                x = periodic_padding_flexible(x, axis=(1,2), padding=(3,3))
-                print(f'cnn layer: periodic padding for conf {x.shape}, axis: (1,2), padding: (3,3)')
+                padding_required = (self.kernel_size - 1) // 2
+                x = periodic_padding_flexible(x, axis=(1,2), padding=(padding_required,padding_required))
+                print(f'cnn layer: periodic padding for conf {x.shape}, axis: (1,2), padding: ({padding_required},{padding_required})')
                 x = l(x)
                 print(f'cnn layer: {l.name} {x.shape}')
             elif i%3==1: # act layer
@@ -173,9 +181,9 @@ class ConvPeriodicPadding(tf.keras.layers.Layer):
                 x = l(x)
                 print(f'cnn layer: {l.name} {x.shape}')
                 intermediate_sum.append(x)
-           
+                #print(f'Sum list after pooling layer:{intermediate_sum.shape}')
         return(x), (intermediate_sum)
-
+        #return intermediate_sum
 
 
 
@@ -234,7 +242,7 @@ class Cnnmodel_Shift_Flip(tf.keras.Model):
             print("shape of flip's state after sum:", (sum(f, axis=-2)).shape)
             summed_flip.append(self.customsum(sum(f, axis=-2)))
 
-        x3 = tf.concat(summed, axis=-2) 
+        x3 = tf.concat(summed, axis=-2) #shape:(None,119,8)
         x3_flip = tf.concat(summed_flip, axis=-2)
         print("shape after concatenate / flip and non-flip: ", x3.shape, x3_flip.shape)
         x3_add = Add()([x3, x3_flip])
