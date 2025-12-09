@@ -25,12 +25,7 @@ from utils import render_latex, latex_table
 #       The path to the source dataset folder. THis folder should contain specific .NPY files which 
 #       contain the images and the labels of the dataset.
 
-if os.path.exists("/home/yuri/Documents/chemegml/DataAug_ChemEngAI/dataset"):
-    SOURCE_PATH = "/home/yuri/Documents/chemegml/DataAug_ChemEngAI/dataset"
-elif os.path.exists("/Users/yuri/Documents/KIT/dataset"):
-    SOURCE_PATH = "/Users/yuri/Documents/KIT/dataset"
-else:
-    SOURCE_PATH = "./dataset/"
+SOURCE_PATH = "./dataset/"
 # :param NUM_VAL:
 #       The number of validation samples to use for the model. This should be a number between 0 and 1.
 #       If set to 0.1, 10% of the training samples will be used for validation. Could also be set to an integer
